@@ -1,0 +1,56 @@
+
+Agent Sender1
+  Vars:
+    state : {idle,writing,done};
+    t : 0..4;
+  end Vars
+  Actions = { wait,wr,nothing };
+  Protocol:
+    state = idle : {wait,wr};
+    state = writing : {wr};
+    state = done : {nothing};
+  end Protocol
+  Evolution:
+    (state = idle and t = t-1) if (state = idle) and (Sender1.Action = wait);
+    (state = writing and t = t-1) if (state = idle) and (Sender1.Action = wr);
+    (state = done) if (state = writing) and (t>=1) and (Sender1.Action = wr) and (Sender2.Action = wait or Sender2.Action = nothing);
+    (state = writing and t = t-1) if (state = writing) and (t>=1) and (Sender1.Action = wr) and (Sender2.Action = wr);
+  end Evolution
+end Agent
+
+Agent Sender2
+  Vars:
+    state : {idle,writing,done};
+    t : 0..4;
+  end Vars
+  Actions = { wait,wr,nothing };
+  Protocol:
+    state = idle : {wait,wr};
+    state = writing : {wr};
+    state = done : {nothing};
+  end Protocol
+  Evolution:
+    (state = idle and t = t-1) if (state = idle) and (Sender2.Action = wait);
+    (state = writing and t = t-1) if (state = idle) and (Sender2.Action = wr);
+    (state = done) if (state = writing) and (t>=1) and (Sender2.Action = wr) and (Sender1.Action = wait or Sender1.Action = nothing);
+    (state = writing and t = t-1) if (state = writing) and (t>=1) and (Sender2.Action = wr) and (Sender1.Action = wr);
+  end Evolution
+end Agent
+
+
+Evaluation
+  success if ( (Sender1.state = done) and (Sender2.state = done) );
+end Evaluation
+
+InitStates
+  ( Sender1.state = idle ) and ( Sender1.t = 4 ) and
+  ( Sender2.state = idle ) and ( Sender2.t = 4 );
+end InitStates
+
+Groups
+	g1 = {Sender1,Sender2};
+end Groups
+
+Formulae
+  <g1>F(success);
+end Formulae
